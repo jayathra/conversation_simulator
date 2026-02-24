@@ -7,7 +7,7 @@ from openai import OpenAI
 def handle_voice_input() -> str:
     """Handle voice input: recording and transcription.
     """
-    st.markdown("### 🎤 Voice Input")
+    st.markdown("### Voice Input")
 
     audio_value = st.audio_input("Click the mic icon below to record", key="audio_recorder")
 
