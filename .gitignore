@@ -1,0 +1,4 @@
+.env
+.env.*
+chromadb_data
+uploads

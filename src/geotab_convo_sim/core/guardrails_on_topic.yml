@@ -1,0 +1,67 @@
+name: on_topic_check
+on_error: CONTINUE
+instructions: |
+  Decide whether the user's input is on-topic relative to the provided persona and recent transcript.
+  Output a JSON object with two keys:
+    - is_on_topic: boolean (true if the input is on-topic and may be sent to the LLM)
+    - reason: string (empty if is_on_topic is true, otherwise a short instruction asking the user to stay on topic)
+
+input_schema:
+  - name: user_input
+    type: string
+    description: The raw text the user typed as the manager.
+  - name: persona
+    type: string
+    description: A short textual description of the persona/scenario.
+  - name: transcript
+    type: string
+    description: The recent conversation transcript concatenated as text.
+
+output_schema:
+  - name: is_on_topic
+    type: boolean
+    description: Whether the user's message is relevant to the conversation.
+  - name: reason
+    type: string
+    description: If not on-topic, a concise message asking the user to stay on topic or to use 'CHANGE TOPIC'.
+
+examples:
+  - input:
+      user_input: "Why didn't you finish the report by the deadline?"
+      persona: "Alex Chen, Senior Software Engineer. Scenario: Missed deadlines on critical project"
+      transcript: "Manager: The report was due on March 1.\nEmployee: I had issues with dependencies."
+    output:
+      is_on_topic: true
+      reason: ""
+
+  - input:
+      user_input: "The campaign metrics look off — why did the open rates drop last week?"
+      persona: "Jordan Taylor, Marketing Coordinator. Scenario: Declining work quality and engagement"
+      transcript: "Manager: Our campaign performance slipped this month.\nEmployee: I've been juggling multiple projects."
+    output:
+      is_on_topic: true
+      reason: ""
+
+  - input:
+      user_input: "You made that design decision without consulting the team; walk me through your thinking."
+      persona: "Sam Rodriguez, Junior Analyst. Scenario: Making decisions without consulting team"
+      transcript: "Manager: We need alignment before shipping features.\nEmployee: I thought speed was more important."
+    output:
+      is_on_topic: true
+      reason: ""
+
+  - input:
+      user_input: "What's the weather like?"
+      persona: "Alex Chen, Senior Software Engineer. Scenario: Missed deadlines on critical project"
+      transcript: "Manager: The report was due on March 1.\nEmployee: I had issues with dependencies."
+    output:
+      is_on_topic: false
+      reason: "Please keep the input focused on the current conversation/topic."
+
+  - input:
+      user_input: "banana"
+      persona: "Jordan Taylor, Marketing Coordinator. Scenario: Declining work quality and engagement"
+      transcript: "Manager: Our campaign performance slipped this month.\nEmployee: I've been juggling multiple projects."
+    output:
+      is_on_topic: false
+      reason: "Please keep the input focused on the current conversation/topic."
