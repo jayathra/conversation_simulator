@@ -125,6 +125,10 @@ def render_pdf_upload_section():
     """Render PDF upload and processing section."""
     st.sidebar.markdown("---")
     st.sidebar.header("Company Knowledge Base")
+    
+    # Show info about how the system works
+    st.sidebar.info("📄 Upload a company document to provide context for coaching feedback. Each new upload replaces the previous document.")
+    
     uploaded_file = st.sidebar.file_uploader(
         "Upload company PDF (coaching guidelines, policies, etc.)",
         type=["pdf"]
@@ -180,6 +184,18 @@ def render_pdf_upload_section():
                 if status in ["queued", "processing"]:
                     time.sleep(0.5)
                     st.rerun()
+    
+    # Add button to manually clear knowledge base
+    if st.sidebar.button("Clear Knowledge Base", help="Remove all uploaded documents from the vector database"):
+        try:
+            from geotab_convo_sim.core.pinecone_utils import delete_namespace
+            if delete_namespace("company-docs"):
+                st.sidebar.success("Knowledge base cleared successfully")
+            else:
+                st.sidebar.warning("Knowledge base may not be fully cleared")
+        except Exception as e:
+            st.sidebar.error(f"Failed to clear knowledge base: {e}")
+        st.rerun()
 
     st.sidebar.markdown("---")
 

@@ -2,3 +2,4 @@
 .env.*
 chromadb_data
 uploads
+readme.md

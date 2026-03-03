@@ -1,7 +1,7 @@
 import threading
 from typing import Dict, Callable, Optional
 from .pdf_utils import process_pdf
-from .pinecone_utils import upsert_chunks
+from .pinecone_utils import upsert_chunks, delete_namespace
 
 # Global job storage
 _jobs: Dict[str, Dict] = {}
@@ -18,6 +18,15 @@ def _process_pdf_job(job_id: str, pdf_path: str, chunk_size: int, overlap: int, 
     try:
         with _job_lock:
             _jobs[job_id]["status"] = "processing"
+            _jobs[job_id]["progress"] = "Clearing old documents..."
+        
+        # Step 0: Clear existing documents in the namespace
+        try:
+            delete_namespace(namespace)
+        except Exception as e:
+            print(f"Warning: Failed to clear namespace: {e}")
+        
+        with _job_lock:
             _jobs[job_id]["progress"] = "Extracting text from PDF..."
         
         # Step 1: Process PDF into chunks
@@ -52,7 +61,7 @@ def _process_pdf_job(job_id: str, pdf_path: str, chunk_size: int, overlap: int, 
         # Step 3: Mark as complete
         with _job_lock:
             _jobs[job_id]["status"] = "completed"
-            _jobs[job_id]["progress"] = f"Successfully uploaded {uploaded}/{total} chunks"
+            _jobs[job_id]["progress"] = f"✓ Document ready! Uploaded {uploaded}/{total} chunks. Old documents have been replaced."
             _jobs[job_id]["chunks_uploaded"] = uploaded
             _jobs[job_id]["chunks_total"] = total
     
